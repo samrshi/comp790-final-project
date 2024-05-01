@@ -1,0 +1,8 @@
+jupyter-book
+cookiecutter
+pytest
+black
+altair
+numpy
+matplotlib
+pandas
