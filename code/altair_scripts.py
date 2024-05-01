@@ -15,8 +15,8 @@ def csxl_leaderboard(csv_file_path: str) -> alt.Chart:
     """
     data = pd.read_csv(csv_file_path)
 
-    data['start'] = pd.to_datetime(data['start'])
-    data['end'] = pd.to_datetime(data['end'])
+    data['start'] = pd.to_datetime(data['start'], format='mixed')
+    data['end'] = pd.to_datetime(data['end'], format='mixed')
 
     # Convert reservation_length from seconds into days
     data['reservation_length'] = (data['end'] - data['start']).dt.total_seconds() / 3600 / 24
@@ -85,7 +85,7 @@ def app_lab_popular_times(csv_file_path: str) -> alt.Chart:
     """
     data = pd.read_csv(csv_file_path)
 
-    data['date'] = pd.to_datetime(data['date'])
+    data['date'] = pd.to_datetime(data['date'], format='mixed')
 
     data['timeIn'] = pd.to_timedelta(data['timeIn'])
 
@@ -130,7 +130,7 @@ def csxl_popular_times(csv_file_path: str):
     """
     data = pd.read_csv(csv_file_path)
 
-    data['start'] = pd.to_datetime(data['start'])
+    data['start'] = pd.to_datetime(data['start'], format="mixed")
 
     # Get the day of the week
     data['day_of_week'] = data['start'].dt.day_name()
@@ -170,7 +170,7 @@ def popular_times_comparison(app_lab_csv_file_path: str, csxl_csv_file_path: str
     """
     app_lab_data = pd.read_csv(app_lab_csv_file_path)
 
-    app_lab_data['date'] = pd.to_datetime(app_lab_data['date'])
+    app_lab_data['date'] = pd.to_datetime(app_lab_data['date'], format='mixed')
 
     app_lab_data['timeIn'] = pd.to_timedelta(app_lab_data['timeIn'])
 
@@ -190,7 +190,7 @@ def popular_times_comparison(app_lab_csv_file_path: str, csxl_csv_file_path: str
 
     xl_data = pd.read_csv(csxl_csv_file_path)
 
-    xl_data['start'] = pd.to_datetime(xl_data['start'])
+    xl_data['start'] = pd.to_datetime(xl_data['start'], format='mixed')
 
     # Get the day of the week
     xl_data['day_of_week'] = xl_data['start'].dt.day_name()
