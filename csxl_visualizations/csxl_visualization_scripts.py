@@ -3,6 +3,34 @@
 import pandas as pd
 import altair as alt
 
+def csxl_distinct_visitors(csv_file_path: str) -> int:
+    """
+    Calculate the number of distinct visitors at the CSXL.
+
+    Args:
+        csv_file_path (str): The file path to the CSV containing CSXL data.
+
+    Returns:
+        int: The number of distinct visitors to the CSXL.
+    """
+    data = pd.read_csv(csv_file_path)
+    return data['user_id'].nunique()
+
+
+def app_lab_distinct_visitors(csv_file_path: str) -> int:
+    """
+    Calculate the number of distinct visitors at the App Lab.
+
+    Args:
+        csv_file_path (str): The file path to the CSV containing App Lab data.
+
+    Returns:
+        int: The number of distinct visitors to the App Lab.
+    """
+    data = pd.read_csv(csv_file_path)
+    return data['PID'].nunique()
+
+
 def csxl_leaderboard(csv_file_path: str) -> alt.Chart:
     """
     Generate a leaderboard (horizontal bar chart) showing the total time spent in the XL for the top 10 users.
@@ -76,88 +104,6 @@ def app_lab_leaderboard(csv_file_path: str) -> alt.Chart:
 
     return chart
 
-def app_lab_popular_times(csv_file_path: str) -> alt.Chart:
-    """
-    Generate a visualization (bar chart) showing the popular times in the App Lab.
-
-    Args:
-        csv_file_path (str): The file path to the CSV containing App Lab data.
-
-    Returns:
-        alt.Chart: An Altair chart object representing the popular times in the App Lab.
-    """
-    data = pd.read_csv(csv_file_path)
-
-    data['date'] = pd.to_datetime(data['date'], format='mixed')
-
-    data['timeIn'] = pd.to_timedelta(data['timeIn'])
-
-    data['start'] = data['date'] + data['timeIn']
-
-    # Get the day of the week
-    data['day_of_week'] = data['start'].dt.day_name()
-
-    # Get the hour of the day in non-military time (also remove leading 0s, for example, 01pm -> 1pm)
-    data['civilian_time'] = data['start'].dt.strftime("%I %p").str.lstrip("0")
-
-    # Group reservations by the day of the week + hour of the day + count the number ofidfferent reservations
-    app_lab_reservations_per_hour = data.groupby(["day_of_week", "civilian_time"]).size().reset_index(name="count")
-
-    # Filter out Saturday and Sunday from App Lab data (since XL does not take reservations on weekends)
-    app_lab_reservations_per_hour = app_lab_reservations_per_hour[app_lab_reservations_per_hour['day_of_week'].isin(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])]
-
-    # Create a domain for equal x axis
-    x_domain = ['9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM']
-
-    chart = alt.Chart(app_lab_reservations_per_hour).mark_bar().encode(
-        x=alt.X('civilian_time:N', title='Hour of the Day', sort=x_domain),
-        y=alt.Y('count:Q', title='Reservations'),
-        column=alt.Column('day_of_week:N', title=None, sort=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']),
-        tooltip=alt.Tooltip('count:Q')
-    ).properties(
-        height=150,
-        title='Popular Times in the App Lab'
-    ).configure_mark(color='#4786c6')
-
-    return chart
-
-def csxl_popular_times(csv_file_path: str):
-    """
-    Generate a visualization (bar chart) showing the popular times in the CSXL.
-
-    Args:
-        csv_file_path (str): The file path to the CSV containing CSXL data.
-
-    Returns:
-        alt.Chart: An Altair chart object representing the popular times in the CSXL.
-    """
-    data = pd.read_csv(csv_file_path)
-
-    data['start'] = pd.to_datetime(data['start'], format="mixed")
-
-    # Get the day of the week
-    data['day_of_week'] = data['start'].dt.day_name()
-
-    # Get the hour of the day in non-military time (also remove leading 0s, for example, 01pm -> 1pm)
-    data['civilian_time'] = data['start'].dt.strftime('%I %p').str.lstrip("0")
-
-    # Group reservations by the day of the week + hour of the day + count the number of different reservations
-    xl_reservations_per_hour = data.groupby(['day_of_week', 'civilian_time']).size().reset_index(name='count') 
-
-    # Create a domain for equal x axis
-    x_domain = ['10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM']
-
-    chart = alt.Chart(xl_reservations_per_hour).mark_bar().encode(
-        x=alt.X('civilian_time:N', title='Hour of the Day', sort=x_domain, scale=alt.Scale(domain=x_domain)),
-        y=alt.Y('count:Q', title='Reservations'),
-        column=alt.Column('day_of_week:N', title=None, sort=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']),
-        tooltip=alt.Tooltip('count:Q')
-    ).properties(
-        height=150,
-        title='Popular Times in the CSXL'
-    ).configure_mark(color='#4786c6')
-
-    return chart
 
 def popular_times_comparison(app_lab_csv_file_path: str, csxl_csv_file_path: str):
     """
