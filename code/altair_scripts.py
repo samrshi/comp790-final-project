@@ -22,7 +22,7 @@ def csxl_leaderboard(csv_file_path: str) -> alt.Chart:
     data['reservation_length'] = (data['end'] - data['start']).dt.total_seconds() / 3600 / 24
 
     # Filter out reservations that are too long (for ex, start and end a month apart – looking at you, user 385)
-    filtered_data = data[data['reservation_length'] < 5]
+    filtered_data = data[data['reservation_length'] < (8 / 24)]
 
     # Find the total amount of time each user spent in the XL (according to reservations)
     total_user_reservation_times = filtered_data.groupby('user_id')['reservation_length'].sum().reset_index()
@@ -37,7 +37,7 @@ def csxl_leaderboard(csv_file_path: str) -> alt.Chart:
         x=alt.X('total_time:Q', title='Total Time (Days)'),
         tooltip=alt.Tooltip('total_time:Q', format='.2f')
     ).properties(
-        title='Total Time per User'
+        title='CSXL Total Time per User'
     )
 
     return chart
@@ -68,7 +68,7 @@ def app_lab_leaderboard(csv_file_path: str) -> alt.Chart:
         x=alt.X('Duration (days)', title='Total Time (Days)'),
         tooltip=alt.Tooltip('Duration (days)')
     ).properties(
-        title='Total Time per User'
+        title='App Lab Total Time per User'
     )
 
     return chart
@@ -251,7 +251,7 @@ def reservations_by_seat_type(csv_file_path: str):
         x = alt.X("count:Q", title=None),
         tooltip=['count']
     ).properties(
-        title="Reservations by Seat Type",
+        title="CSXL Reservations by Seat Type",
         height=150
     ).configure_mark(color='#4786c6')
 
