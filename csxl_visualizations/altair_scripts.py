@@ -57,8 +57,11 @@ def app_lab_leaderboard(csv_file_path: str) -> alt.Chart:
     # Create convert duration to number of days per reservation
     data['Duration (days)'] = pd.to_timedelta(data['Duration']).dt.total_seconds() / (24 * 60 * 60) 
 
+    # Filter out outlier reservations
+    filtered_data = data[data['Duration (days)'] < (8 * 24)]
+
     # Create table for top 10 students in duration of time.  
-    duration_by_pid = data.groupby(['PID'])
+    duration_by_pid = filtered_data.groupby(['PID'])
     duration_by_pid = duration_by_pid['Duration (days)'].sum().reset_index()
     duration_by_pid = duration_by_pid.sort_values(by='Duration (days)', ascending=False)
     duration_by_pid = duration_by_pid.head(10)
@@ -243,8 +246,6 @@ def reservations_by_seat_type(csv_file_path: str):
     data = pd.read_csv(csv_file_path)
 
     reservations_by_seat_type = data.groupby("title").size().reset_index(name="count")
-    reservations_by_seat_type.head(10)
-
 
     chart = alt.Chart(reservations_by_seat_type).mark_bar().encode( 
         y = alt.Y("title:N", title="Seat Type"),
