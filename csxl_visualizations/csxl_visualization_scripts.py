@@ -261,7 +261,7 @@ def reservations_by_seat_type(csv_file_path: str):
 
     chart = alt.Chart(reservations_by_seat_type).mark_bar().encode( 
         y = alt.Y("title:N", title="Seat Type"),
-        x = alt.X("count:Q", title=None),
+        x = alt.X("count:Q", title="Number of Reservations"),
         tooltip=['count']
     ).properties(
         title="CSXL Reservations by Seat Type",
