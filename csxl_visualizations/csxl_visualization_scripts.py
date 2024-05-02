@@ -66,7 +66,7 @@ def csxl_leaderboard(csv_file_path: str) -> alt.Chart:
         tooltip=alt.Tooltip('total_time:Q', format='.2f')
     ).properties(
         title='CSXL Total Time per User'
-    )
+    ).configure_mark(color='#4786c6')
 
     return chart
 
@@ -100,7 +100,7 @@ def app_lab_leaderboard(csv_file_path: str) -> alt.Chart:
         tooltip=alt.Tooltip('Duration (days)')
     ).properties(
         title='App Lab Total Time per User'
-    )
+    ).configure_mark(color='#4786c6')
 
     return chart
 
@@ -177,6 +177,72 @@ def popular_times_comparison(app_lab_csv_file_path: str, csxl_csv_file_path: str
     ).configure_mark(color='#4786c6')
 
     return [app_lab_chart, xl_chart]
+
+def leaderboard_comparison(csxl_csv_file_path: str, app_lab_csv_file_path: str) -> list:
+    """
+    Generate visualizations (bar charts) showing user leaderboards for the App Lab + CSXL, with equivalent x axis scales.
+
+    Args:
+        app_lab_csv_file_path (str): The file path to the CSV containing App Lab data.
+        csxl_csv_file_path (str): The file path to the CSV containing CSXL data.
+
+    Returns:
+        list[alt.Chart]: A list of Altair chart objects representing the leaderboards for App Lab and CSXL use.
+        The App Lab chart appears first in the list and is followed by the CSXL chart.
+    """
+    # Read CSXL data
+    csxl_data = pd.read_csv(csxl_csv_file_path)
+    # Parse date-time columns with specified format
+    csxl_data['start'] = pd.to_datetime(csxl_data['start'], format='mixed')
+    csxl_data['end'] = pd.to_datetime(csxl_data['end'], format='mixed')
+
+    # Convert reservation_length from seconds into days
+    csxl_data['reservation_length'] = (csxl_data['end'] - csxl_data['start']).dt.total_seconds() / 3600 / 24
+
+    # Filter out reservations that are too long (for ex, start and end a month apart – looking at you, user 385)
+    filtered_data = csxl_data[csxl_data['reservation_length'] < (8 / 24)]
+
+    # Calculate total time per user in CSXL
+    total_user_reservation_times = filtered_data.groupby('user_id')['reservation_length'].sum().reset_index()
+    total_user_reservation_times.columns = ['user_id', 'total_time']
+    top_10_users_csxl = total_user_reservation_times.sort_values(by='total_time', ascending=False).head(10)
+    maximum_csxl = total_user_reservation_times['total_time'].max()
+
+    # Read App Lab data
+    app_lab_data = pd.read_csv(app_lab_csv_file_path)
+    # Create convert duration to number of days per reservation
+    app_lab_data['Duration (days)'] = pd.to_timedelta(app_lab_data['Duration']).dt.total_seconds() / (24 * 60 * 60) 
+
+    # Filter out outlier reservations
+    filtered_data = app_lab_data[app_lab_data['Duration (days)'] < (8 * 24)]
+
+    # Create table for top 10 students in duration of time.  
+    duration_by_pid = filtered_data.groupby(['PID'])
+    duration_by_pid = duration_by_pid['Duration (days)'].sum().reset_index()
+    duration_by_pid = duration_by_pid.sort_values(by='Duration (days)', ascending=False)
+    duration_by_pid = duration_by_pid.head(10)
+
+    # Determine the maximum time across both datasets
+    max_time = maximum_csxl
+
+    # Create Altair charts
+    app_lab_chart = alt.Chart(duration_by_pid).mark_bar().encode(
+        y=alt.Y('PID:O', title='User ID', sort="-x"),
+        x=alt.X('Duration (days)', title='Total Time (Days)', scale=alt.Scale(domain=[None, max_time + 1])),
+        tooltip=alt.Tooltip('Duration (days)')
+    ).properties(
+        title='App Lab Total Time per User'
+    ).configure_mark(color='#4786c6')
+
+    csxl_chart = alt.Chart(top_10_users_csxl).mark_bar().encode(
+        y=alt.Y('user_id:O', title='User ID', sort='-x'),
+        x=alt.X('total_time:Q', title='Total Time (Days)', scale=alt.Scale(domain=[None, max_time + 1])),
+        tooltip=alt.Tooltip('total_time:Q', format='.2f')
+    ).properties(
+        title='CSXL Total Time per User'
+    ).configure_mark(color='#4786c6')
+
+    return [app_lab_chart, csxl_chart]
 
 def reservations_by_seat_type(csv_file_path: str):
     """
