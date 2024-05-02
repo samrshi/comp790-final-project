@@ -2,9 +2,11 @@
 
 COMP 790 (Information Visualization) final project.
 
+Maddy Andrews, Sam Shi, Matt Kolsch, Felipe Yanaga
+
 ## Live Deployment
 
-View live deployment here: https://samrshi.github.io/comp790-final-project/visualizations.html.
+View live deployment here: [samrshi.github.io/comp790-final-project/visualizations.html](https://samrshi.github.io/comp790-final-project/visualizations.html).
 
 ## Usage
 
